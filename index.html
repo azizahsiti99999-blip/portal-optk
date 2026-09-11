@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PORTAL TERPADU: Biosekuriti Penternakan, Karantina Veterinar & OPTK</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              forest: '#14412c',
+              emerald: '#059669',
+              sand: '#F7F5EE',
+              sandDark: '#E8E3D2',
+              navy: '#0f2334',
+              gold: '#C99E32',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #059669; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #14412c; }
+    .modal-blur { backdrop-filter: blur(8px); }
+    .editable-active { outline: 2px dashed #059669 !important; background-color: rgba(5, 150, 105, 0.12) !important; border-radius: 6px; padding: 2px 4px; }
+    .photo-editable-active { outline: 3px dashed #059669 !important; cursor: pointer !important; filter: brightness(0.9); }
+    .card-zoom-img { transition: transform 0.5s ease; }
+    .group:hover .card-zoom-img { transform: scale(1.05); }
+  </style>
+</head>
+
+<body class="bg-brand-sand text-slate-800 font-sans antialiased selection:bg-brand-emerald selection:text-white">
+
+  <!-- FLOATING ACTION CONTROLS -->
+  <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5">
+    <button id="toggleEditBtn" onclick="toggleEditMode()" class="px-5 py-3 rounded-full bg-brand-forest hover:bg-brand-emerald text-white text-xs font-bold shadow-2xl flex items-center gap-2 transition-all hover:scale-105 border border-white/20">
+      <i data-lucide="edit-3" class="w-4 h-4"></i>
+      <span id="toggleEditText">Mode Edit Semua Teks & Foto</span>
+    </button>
+    <button onclick="openManageOptkModal()" class="px-5 py-3 rounded-full bg-brand-navy hover:bg-slate-700 text-white text-xs font-bold shadow-2xl flex items-center gap-2 transition-all hover:scale-105 border border-white/20">
+      <i data-lucide="database" class="w-4 h-4"></i>
+      <span>Kelola Database OPTK</span>
+    </button>
+  </div>
+
+  <!-- TOP BAR & NAVBAR -->
+  <div class="bg-brand-navy text-white text-[11px] sm:text-xs font-semibold py-2 px-4 text-center tracking-wide border-b border-white/10 relative z-50">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2">
+      <span class="flex items-center gap-1.5 text-emerald-400 font-bold">
+        <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> PROTOKOL WOAH & BKHIT:
+      </span>
+      <span class="editable" data-field="topbar_desc" contenteditable="false">Pematuhan Kod Kesihatan Terestrial WOAH, UU No. 21/2019, & Mandat Karantina Negara.</span>
+    </div>
+  </div>
+
+  <header class="sticky top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-brand-sandDark transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <a href="#profil-bkhit" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-2xl bg-white border border-brand-sandDark overflow-hidden flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform">
+          <!-- Placeholder atau Logo SVG ringkas -->
+          <i data-lucide="shield-check" class="w-6 h-6 text-brand-emerald"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-sm sm:text-base text-brand-navy tracking-tight leading-tight">PORTAL TERPADU</h1>
+          <p class="text-[10px] sm:text-xs text-slate-500 font-mono tracking-wider">BIOSEKURITI & KARANTINA</p>
+        </div>
+      </a>
+      <nav class="hidden xl:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#biosekuriti" class="hover:text-brand-emerald transition-colors">Biosekuriti Penternakan</a>
+        <a href="#karantina" class="hover:text-brand-emerald transition-colors">Karantina Veterinar</a>
+        <a href="#optk" class="hover:text-brand-emerald transition-colors">Database OPTK</a>
+        <a href="#panduan" class="hover:text-brand-emerald transition-colors">SOP & Regulasi</a>
+      </nav>
+      <div>
+        <a href="#layanan" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-emerald hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all hover:scale-105">
+          <i data-lucide="file-text" class="w-4 h-4"></i>
+          <span>Layanan Permohonan</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="relative overflow-hidden bg-brand-navy py-20 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+          <i data-lucide="activity" class="w-3.5 h-3.5"></i> SISTEM MONITORING & PERLINDUNGAN HAYATI
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-black tracking-tight leading-snug">
+          Pengamanan Kesihatan Haiwan & Tumbuhan Terpadu Berstandar Global
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base leading-relaxed editable" data-field="hero_desc" contenteditable="false">
+          Pusat integrasi data biosekuriti penternakan, pengawasan lalulintas karantina veterinar, dan pencegahan Organisme Pengganggu Tumbuhan Karantina (OPTK) demi kedaulatan pangan nasional.
+        </p>
+        <div class="flex flex-wrap gap-4 pt-2">
+          <a href="#biosekuriti" class="px-6 py-3.5 rounded-xl bg-brand-emerald hover:bg-emerald-600 text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2">
+            <span>Mula Teroka Biosekuriti</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="#optk" class="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all">
+            Cari Database OPTK
+          </a>
+        </div>
+      </div>
+      <div class="lg:col-span-5">
+        <div class="bg-white/10 p-6 rounded-3xl border border-white/10 backdrop-blur-md shadow-2xl space-y-4">
+          <h3 class="font-bold text-base text-emerald-400 flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5"></i> Status Karantina Terkini
+          </h3>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5 flex justify-between items-center">
+              <span>Zona Bebas AI (Avian Influenza)</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">TERKENDALI</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5 flex justify-between items-center">
+              <span>Pengawasan Lalulintas Ternak</span>
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono font-bold">KETAT</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900/60 border border-white/5 flex justify-between items-center">
+              <span>Pemeriksaan OPTK Golongan A1/A2</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">AKTIF 24/7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: BIOSEKURITI PENTERNAKAN -->
+  <section id="biosekuriti" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16 space-y-3">
+      <span class="text-xs font-mono font-bold text-brand-emerald tracking-widest uppercase">Pilar Utama I</span>
+      <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Biosekuriti Penternakan Moden</h2>
+      <p class="text-slate-600 text-sm">Penerapan standar sanitasi dan pengamanan ketat di kawasan penternakan guna mencegah masuknya agen penyakit infeksius.</p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Card 1 -->
+      <div class="bg-white rounded-2xl p-6 border border-brand-sandDark shadow-sm hover:shadow-xl transition-all space-y-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-brand-emerald flex items-center justify-center font-bold">
+          <i data-lucide="shield" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-bold text-lg text-brand-navy">Zona Sanitasi (Zoning)</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">Pembagian zonasi bersih dan kotor untuk meminimalisir kontaminasi silang dalam kompleks penternakan komersial.</p>
+      </div>
+      <!-- Card 2 -->
+      <div class="bg-white rounded-2xl p-6 border border-brand-sandDark shadow-sm hover:shadow-xl transition-all space-y-4">
+        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+          <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-bold text-lg text-brand-navy">Desinfeksi Kendaraan</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">Penyemprotan disinfektan otomatis di pintu masuk kawasan kandang bagi setiap kendművatan pengangkut pakan atau ternak.</p>
+      </div>
+      <!-- Card 3 -->
+      <div class="bg-white rounded-2xl p-6 border border-brand-sandDark shadow-sm hover:shadow-xl transition-all space-y-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+          <i data-lucide="lock" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-bold text-lg text-brand-navy">Kontrol Lalu Lintas Masuk</h3>
+        <p class="text-slate-600 text-xs leading-relaxed">Pembatasan ketat terhadap pelawat, sterilisasi pekerja kandang, serta manajemen pencegahan vektor pembawa penyakit.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: KARANTINA VETERINAR -->
+  <section id="karantina" class="py-20 bg-brand-sandDark/40 border-y border-brand-sandDark">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-16 space-y-3">
+        <span class="text-xs font-mono font-bold text-brand-emerald tracking-widest uppercase">Pilar Utama II</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Karantina Veterinar & Kesehatan Haiwan</h2>
+        <p class="text-slate-600 text-sm">Prosedur pencegahan hama dan penyakit hewan karantina (HPHK) lintas batas wilayah dan pelabuhan negara.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white p-8 rounded-3xl border border-brand-sandDark shadow-sm space-y-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-navy text-white flex items-center justify-center font-bold">1</div>
+            <h3 class="font-bold text-lg text-brand-navy">Pemeriksaan Klinis & Laboratorium</h3>
+          </div>
+          <p class="text-slate-600 text-xs leading-relaxed">Pengujian sampel darah, swab, dan jaringan secara molekuler (PCR/Serologi) di instalasi karantina hewan sebelum diterbitkan SIK (Surat Izin Keluar/Masuk).</p>
+        </div>
+        <div class="bg-white p-8 rounded-3xl border border-brand-sandDark shadow-sm space-y-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-navy text-white flex items-center justify-center font-bold">2</div>
+            <h3 class="font-bold text-lg text-brand-navy">Tindakan Perlakuan & Penolakan</h3>
+          </div>
+          <p class="text-slate-600 text-xs leading-relaxed">Tindakan karantina berupa pengasingan, pengamatan, pengobatan, disinfeksi, hingga penolakan atau pemusnahan jika terdeteksi penyakit menular berbahaya.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: DATABASE OPTK -->
+  <section id="optk" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+      <div class="space-y-3">
+        <span class="text-xs font-mono font-bold text-brand-emerald tracking-widest uppercase">Pilar Utama III</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-brand-navy">Database Organisme Pengganggu Tumbuhan Karantina (OPTK)</h2>
+        <p class="text-slate-600 text-sm max-w-xl">Daftar inventarisasi hama, patogen, dan gulma sasaran karantina golongan A1 dan A2.</p>
+      </div>
+      <div class="w-full md:w-72">
+        <input type="text" id="optkSearchInput" onkeyup="filterOptkTable()" placeholder="Cari nama OPTK..." class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-xs focus:outline-none focus:border-brand-emerald shadow-sm">
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-brand-sandDark shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table id="optkTable" class="w-full text-left text-xs">
+          <thead class="bg-brand-navy text-white uppercase tracking-wider font-mono text-[10px]">
+            <tr>
+              <th class="p-4">Kode OPTK</th>
+              <th class="p-4">Nama Ilmiah / Spesies</th>
+              <th class="p-4">Golongan</th>
+              <th class="p-4">Inang Utama</th>
+              <th class="p-4">Status Risiko</th>
+              <th class="p-4">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="optkTableBody" class="divide-y divide-slate-200 text-slate-700">
+            <!-- Data diisi dari localStorage -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL: KELOLA DATABASE OPTK -->
+  <div id="manageOptkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-md hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl border border-brand-sandDark m-4 space-y-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-4">
+        <h3 class="font-black text-xl text-brand-navy flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-brand-emerald"></i> Kelola Entri Database OPTK
+        </h3>
+        <button onclick="closeManageOptkModal()" class="p-2 rounded-full hover:bg-slate-100 text-slate-500">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <form id="optkForm" onsubmit="addOptkEntry(event)" class="space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Kode OPTK</label>
+            <input type="text" id="newCode" required placeholder="Contoh: OPTK-05" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-emerald">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Nama Ilmiah / Spesies</label>
+            <input type="text" id="newName" required placeholder="Contoh: Conotrachelus nenuphar" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-emerald">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Golongan</label>
+            <select id="newGroup" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-emerald">
+              <option value="A1">A1 (Belum Ada di Indonesia)</option>
+              <option value="A2">A2 (Sudah Ada di Wilayah Tertentu)</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Inang Utama</label>
+            <input type="text" id="newHost" required placeholder="Contoh: Buah Apel, Persik" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-emerald">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Status Risiko</label>
+            <select id="newRisk" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-brand-emerald">
+              <option value="Tinggi (Kritis)">Tinggi (Kritis)</option>
+              <option value="Sederhana">Sederhana</option>
+              <option value="Rendah">Rendah</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-brand-emerald text-white font-bold text-xs shadow hover:bg-emerald-700 transition-all">
+          Tambah Data OPTK Baru
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-brand-navy text-white py-12 border-t border-white/10 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-8 mb-8">
+      <div class="space-y-3">
+        <h4 class="font-extrabold text-sm text-emerald-400">PORTAL TERPADU VETERINAR & KARANTINA</h4>
+        <p class="text-slate-400 leading-relaxed">Sistem pelaporan terintegrasi untuk mendukung keamanan hayati penternakan dan perlindungan sumber daya alam hayati dari ancaman OPTK serta HPHK.</p>
+      </div>
+      <div class="space-y-3">
+        <h4 class="font-bold text-sm text-white">Tautan Penting</h4>
+        <ul class="space-y-2 text-slate-400">
+          <li><a href="#biosekuriti" class="hover:text-emerald-400">Panduan Biosekuriti Kandang</a></li>
+          <li><a href="#karantina" class="hover:text-emerald-400">Standard Operasional Karantina</a></li>
+          <li><a href="#optk" class="hover:text-emerald-400">Database OPTK Terbaru</a></li>
+        </ul>
+      </div>
+      <div class="space-y-3">
+        <h4 class="font-bold text-sm text-white">Pusat Panggilan Darurat</h4>
+        <p class="text-slate-400">Layanan Siaga Cepat Pelaporan Penyakit Hewan & OPTK:</p>
+        <p class="font-mono font-bold text-emerald-400 text-sm">+62 800-1-KARANTINA</p>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 border-t border-white/10 text-center text-slate-500 font-mono text-[11px]">
+      &copy; 2026 Portal Terpadu Biosekuriti Penternakan, Karantina Veterinar & OPTK. Hak Cipta Dilindungi Undang-Undang.
+    </div>
+  </footer>
+
+  <!-- SCRIPT INTERAKTIF & EDIT MODE -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // STORAGE KEY
+    const OPTK_STORAGE_KEY = 'optkDatabase';
+    const DEFAULT_OPTK_DATA = [
+      {
+        code: 'OPTK-01',
+        name: 'Bactrocera dorsalis',
+        group: 'A1',
+        host: 'Mangga, Jambu, Paprika',
+        risk: 'Tinggi (Kritis)'
+      },
+      {
+        code: 'OPTK-02',
+        name: 'Ralstonia solanacearum',
+        group: 'A2',
+        host: 'Kentang, Tomato, Pisang',
+        risk: 'Sederhana'
+      },
+      {
+        code: 'OPTK-03',
+        name: 'Trogoderma granarium',
+        group: 'A1',
+        host: 'Biji-bijian, Gandum, Beras',
+        risk: 'Tinggi (Kritis)'
+      },
+      {
+        code: 'OPTK-04',
+        name: 'Potato spindle tuber viroid',
+        group: 'A2',
+        host: 'Ubi Kentang, Solanaceae',
+        risk: 'Sederhana'
+      }
+    ];
+
+    // INIT: Load data from localStorage on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadOptkData();
+      lucide.createIcons();
+    });
+
+    // Load OPTK data from localStorage
+    function loadOptkData() {
+      const storedData = localStorage.getItem(OPTK_STORAGE_KEY);
+      const optkData = storedData ? JSON.parse(storedData) : DEFAULT_OPTK_DATA;
+      
+      // Save to localStorage if not already there
+      if (!storedData) {
+        localStorage.setItem(OPTK_STORAGE_KEY, JSON.stringify(DEFAULT_OPTK_DATA));
+      }
+
+      renderOptkTable(optkData);
+    }
+
+    // Render table from data array
+    function renderOptkTable(data) {
+      const tableBody = document.getElementById('optkTableBody');
+      tableBody.innerHTML = '';
+
+      data.forEach((item, index) => {
+        const newRow = document.createElement('tr');
+        newRow.className = 'hover:bg-slate-50 transition-colors';
+
+        const riskColorClass = item.risk === 'Tinggi (Kritis)' ? 'text-rose-600' : 'text-amber-600';
+        const groupBadgeClass = item.group === 'A1' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700';
+
+        newRow.innerHTML = `
+          <td class="p-4 font-mono font-bold text-brand-emerald">${item.code}</td>
+          <td class="p-4 font-semibold italic">${item.name}</td>
+          <td class="p-4"><span class="px-2 py-0.5 rounded ${groupBadgeClass} font-bold">${item.group}</span></td>
+          <td class="p-4">${item.host}</td>
+          <td class="p-4"><span class="font-bold ${riskColorClass}">${item.risk}</span></td>
+          <td class="p-4">
+            <button onclick="deleteOptkEntry('${item.code}')" class="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs transition-all flex items-center gap-1">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              Hapus
+            </button>
+          </td>
+        `;
+
+        tableBody.appendChild(newRow);
+      });
+
+      // Re-initialize icons after rendering
+      lucide.createIcons();
+    }
+
+    let isEditMode = false;
+
+    function toggleEditMode() {
+      isEditMode = !isEditMode;
+      const editables = document.querySelectorAll('.editable');
+      const btnText = document.getElementById('toggleEditText');
+      const btn = document.getElementById('toggleEditBtn');
+
+      if (isEditMode) {
+        editables.forEach(el => {
+          el.setAttribute('contenteditable', 'true');
+          el.classList.add('editable-active');
+        });
+        btnText.textContent = 'Matikan Mode Edit & Simpan';
+        btn.classList.remove('bg-brand-forest');
+        btn.classList.add('bg-rose-600', 'hover:bg-rose-700');
+        alert("Mode Edit Aktif! Anda kini boleh mengubah mana-mana teks di halaman ini secara langsung.");
+      } else {
+        editables.forEach(el => {
+          el.setAttribute('contenteditable', 'false');
+          el.classList.remove('editable-active');
+        });
+        btnText.textContent = 'Mode Edit Semua Teks & Foto';
+        btn.classList.remove('bg-rose-600', 'hover:bg-rose-700');
+        btn.classList.add('bg-brand-forest');
+        alert("Perubahan disimpan secara lokal pada sesi pelayar ini.");
+      }
+    }
+
+    // Modal Control untuk Database OPTK
+    function openManageOptkModal() {
+      document.getElementById('manageOptkModal').classList.remove('hidden');
+    }
+
+    function closeManageOptkModal() {
+      document.getElementById('manageOptkModal').classList.add('hidden');
+    }
+
+    // Tambah Data OPTK ke Tabel secara Dinamik
+    function addOptkEntry(e) {
+      e.preventDefault();
+      const code = document.getElementById('newCode').value;
+      const name = document.getElementById('newName').value;
+      const group = document.getElementById('newGroup').value;
+      const host = document.getElementById('newHost').value;
+      const risk = document.getElementById('newRisk').value;
+
+      // Get existing data
+      const storedData = localStorage.getItem(OPTK_STORAGE_KEY);
+      const optkData = storedData ? JSON.parse(storedData) : [];
+
+      // Check if code already exists
+      if (optkData.some(item => item.code === code)) {
+        alert("❌ Kode OPTK sudah ada! Gunakan kode yang berbeda.");
+        return;
+      }
+
+      // Add new entry
+      const newEntry = { code, name, group, host, risk };
+      optkData.push(newEntry);
+
+      // Save to localStorage
+      localStorage.setItem(OPTK_STORAGE_KEY, JSON.stringify(optkData));
+
+      // Re-render table
+      renderOptkTable(optkData);
+
+      // Reset form and close modal
+      document.getElementById('optkForm').reset();
+      closeManageOptkModal();
+      alert("✅ Entri OPTK baru berjaya ditambahkan ke dalam database.");
+    }
+
+    // Delete OPTK entry
+    function deleteOptkEntry(code) {
+      if (!confirm(`Yakin ingin menghapus ${code}?`)) return;
+
+      const storedData = localStorage.getItem(OPTK_STORAGE_KEY);
+      let optkData = storedData ? JSON.parse(storedData) : [];
+
+      // Filter out the deleted entry
+      optkData = optkData.filter(item => item.code !== code);
+
+      // Save to localStorage
+      localStorage.setItem(OPTK_STORAGE_KEY, JSON.stringify(optkData));
+
+      // Re-render table
+      renderOptkTable(optkData);
+      alert("✅ Data OPTK berhasil dihapus.");
+    }
+
+    // Fungsi Filter Tabel OPTK
+    function filterOptkTable() {
+      const input = document.getElementById('optkSearchInput');
+      const filter = input.value.toLowerCase();
+      const table = document.getElementById('optkTable');
+      const trs = table.getElementsByTagName('tr');
+
+      for (let i = 1; i < trs.length; i++) {
+        let tdName = trs[i].getElementsByTagName('td')[1];
+        let tdCode = trs[i].getElementsByTagName('td')[0];
+        if (tdName || tdCode) {
+          let textName = tdName.textContent || tdName.innerText;
+          let textCode = tdCode.textContent || tdCode.innerText;
+          if (textName.toLowerCase().indexOf(filter) > -1 || textCode.toLowerCase().indexOf(filter) > -1) {
+            trs[i].style.display = "";
+          } else {
+            trs[i].style.display = "none";
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
