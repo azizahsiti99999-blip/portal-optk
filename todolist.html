@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo List App - Local Storage</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            success: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+            },
+            danger: {
+              50: '#fef2f2',
+              500: '#ef4444',
+              600: '#dc2626',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f3f4f6; }
+    ::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+    
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .slide-out { animation: slideOut 0.3s ease-out; }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(100%); }
+    }
+    
+    .task-item:hover { background-color: #f8fafc; }
+    
+    .empty-state { display: flex; align-items: center; justify-content: center; min-height: 300px; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-primary-50 to-blue-50 min-h-screen text-gray-800">
+
+  <!-- Navigation Bar -->
+  <nav class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-primary-500 text-white flex items-center justify-center font-bold">
+          <i data-lucide="check-circle" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-gray-900">TodoList Pro</h1>
+          <p class="text-xs text-gray-500 font-mono">Local Storage Edition</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openSettingsModal()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+        <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+          <i data-lucide="sun" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">My Tasks</h2>
+            <p class="text-sm text-gray-500 mt-1">Keep track of your daily to-do items</p>
+          </div>
+          <div class="text-right">
+            <div class="text-3xl font-bold text-primary-600" id="taskCount">0</div>
+            <p class="text-xs text-gray-500">Total Tasks</p>
+          </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="flex gap-2 mt-6">
+          <input 
+            type="text" 
+            id="taskInput" 
+            placeholder="Add a new task..." 
+            class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all"
+            onkeypress="handleKeyPress(event)"
+          >
+          <select id="categorySelect" class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all">
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+            <option value="shopping">Shopping</option>
+            <option value="health">Health</option>
+            <option value="other">Other</option>
+          </select>
+          <button onclick="addTask()" class="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-all flex items-center gap-2 shadow-md hover:shadow-lg">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span class="hidden sm:inline">Add</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Sort Section -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      <div class="flex gap-2">
+        <button onclick="filterTasks('all')" class="filter-btn px-4 py-2 rounded-lg font-semibold text-sm transition-all active bg-primary-500 text-white" data-filter="all">
+          All
+        </button>
+        <button onclick="filterTasks('active')" class="filter-btn px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-gray-700 hover:bg-gray-100 border border-gray-300" data-filter="active">
+          Active
+        </button>
+        <button onclick="filterTasks('completed')" class="filter-btn px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-gray-700 hover:bg-gray-100 border border-gray-300" data-filter="completed">
+          Completed
+        </button>
+      </div>
+      
+      <div class="ml-auto flex gap-2">
+        <button onclick="sortTasks('date')" class="px-4 py-2 rounded-lg bg-white text-gray-700 font-semibold text-sm border border-gray-300 hover:bg-gray-100 transition-all flex items-center gap-2">
+          <i data-lucide="clock" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Date</span>
+        </button>
+        <button onclick="sortTasks('priority')" class="px-4 py-2 rounded-lg bg-white text-gray-700 font-semibold text-sm border border-gray-300 hover:bg-gray-100 transition-all flex items-center gap-2">
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Priority</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="space-y-3" id="tasksList">
+      <!-- Tasks will be rendered here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state bg-white rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center gap-4">
+      <i data-lucide="inbox" class="w-16 h-16 text-gray-300"></i>
+      <div class="text-center">
+        <h3 class="text-lg font-semibold text-gray-600">No tasks yet</h3>
+        <p class="text-sm text-gray-500">Add a task to get started!</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-12">
+      <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total Tasks</p>
+            <p class="text-2xl font-bold text-gray-900" id="statTotal">0</p>
+          </div>
+          <i data-lucide="list" class="w-8 h-8 text-primary-500 opacity-30"></i>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Completed</p>
+            <p class="text-2xl font-bold text-success-600" id="statCompleted">0</p>
+          </div>
+          <i data-lucide="check" class="w-8 h-8 text-success-500 opacity-30"></i>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Pending</p>
+            <p class="text-2xl font-bold text-primary-600" id="statPending">0</p>
+          </div>
+          <i data-lucide="circle" class="w-8 h-8 text-primary-500 opacity-30"></i>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Completion</p>
+            <p class="text-2xl font-bold text-primary-600" id="statProgress">0%</p>
+          </div>
+          <i data-lucide="trending-up" class="w-8 h-8 text-primary-500 opacity-30"></i>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl m-4 space-y-6">
+      <div class="flex items-center justify-between border-b pb-4">
+        <h3 class="font-bold text-lg text-gray-900 flex items-center gap-2">
+          <i data-lucide="settings" class="w-5 h-5 text-primary-500"></i> Settings
+        </h3>
+        <button onclick="closeSettingsModal()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold text-gray-700">Dark Mode</span>
+          <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" class="w-5 h-5 rounded">
+        </div>
+
+        <div class="flex items-center justify-between border-t pt-4">
+          <span class="font-semibold text-gray-700">Show Completed Tasks</span>
+          <input type="checkbox" id="showCompletedToggle" checked onchange="updateTasksDisplay()" class="w-5 h-5 rounded">
+        </div>
+
+        <div class="border-t pt-4">
+          <button onclick="clearAllTasks()" class="w-full px-4 py-2 bg-danger-500 hover:bg-danger-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            Clear All Tasks
+          </button>
+        </div>
+
+        <div class="border-t pt-4">
+          <button onclick="exportTasks()" class="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Export Tasks (JSON)
+          </button>
+        </div>
+
+        <div class="border-t pt-4">
+          <p class="text-xs text-gray-500 text-center">
+            <strong>Total Storage:</strong> <span id="storageSize">0</span> KB
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-16 py-8 border-t border-gray-200 bg-white/50">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-600">
+      <p>TodoList Pro © 2024 | Data saved locally in your browser</p>
+      <p class="mt-2 text-xs text-gray-500">Your tasks are stored in localStorage and will persist even after closing the browser.</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    lucide.createIcons();
+
+    const STORAGE_KEY = 'todoListTasks';
+    const CATEGORY_COLORS = {
+      work: { bg: 'bg-blue-100', text: 'text-blue-700', badge: 'bg-blue-500' },
+      personal: { bg: 'bg-purple-100', text: 'text-purple-700', badge: 'bg-purple-500' },
+      shopping: { bg: 'bg-orange-100', text: 'text-orange-700', badge: 'bg-orange-500' },
+      health: { bg: 'bg-green-100', text: 'text-green-700', badge: 'bg-green-500' },
+      other: { bg: 'bg-gray-100', text: 'text-gray-700', badge: 'bg-gray-500' }
+    };
+
+    let tasks = [];
+    let currentFilter = 'all';
+    let currentSort = 'date';
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+      loadTasks();
+      updateTasksDisplay();
+      updateStats();
+      updateStorageSize();
+      lucide.createIcons();
+    });
+
+    // Load tasks from localStorage
+    function loadTasks() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      tasks = stored ? JSON.parse(stored) : [];
+    }
+
+    // Save tasks to localStorage
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      updateStorageSize();
+    }
+
+    // Add new task
+    function addTask() {
+      const input = document.getElementById('taskInput');
+      const category = document.getElementById('categorySelect').value;
+      const text = input.value.trim();
+
+      if (!text) {
+        alert('Please enter a task!');
+        return;
+      }
+
+      const newTask = {
+        id: Date.now(),
+        text: text,
+        category: category,
+        completed: false,
+        priority: 'medium',
+        createdAt: new Date().toISOString(),
+        dueDate: null
+      };
+
+      tasks.push(newTask);
+      saveTasks();
+      updateTasksDisplay();
+      updateStats();
+      
+      input.value = '';
+      input.focus();
+    }
+
+    // Handle Enter key
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        addTask();
+      }
+    }
+
+    // Toggle task completion
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        saveTasks();
+        updateTasksDisplay();
+        updateStats();
+      }
+    }
+
+    // Delete task
+    function deleteTask(id) {
+      if (confirm('Delete this task?')) {
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks();
+        updateTasksDisplay();
+        updateStats();
+      }
+    }
+
+    // Edit task
+    function editTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      const newText = prompt('Edit task:', task.text);
+      if (newText && newText.trim()) {
+        task.text = newText.trim();
+        saveTasks();
+        updateTasksDisplay();
+      }
+    }
+
+    // Change task priority
+    function changePriority(id, priority) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.priority = priority;
+        saveTasks();
+        updateTasksDisplay();
+      }
+    }
+
+    // Filter tasks
+    function filterTasks(filter) {
+      currentFilter = filter;
+      
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('bg-primary-500', 'text-white');
+        btn.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+      });
+      
+      document.querySelector(`[data-filter="${filter}"]`).classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-300');
+      document.querySelector(`[data-filter="${filter}"]`).classList.add('bg-primary-500', 'text-white');
+      
+      updateTasksDisplay();
+    }
+
+    // Sort tasks
+    function sortTasks(sortType) {
+      currentSort = sortType;
+      updateTasksDisplay();
+    }
+
+    // Update tasks display
+    function updateTasksDisplay() {
+      let filtered = tasks;
+
+      if (currentFilter === 'active') {
+        filtered = tasks.filter(t => !t.completed);
+      } else if (currentFilter === 'completed') {
+        filtered = tasks.filter(t => t.completed);
+      }
+
+      if (currentSort === 'priority') {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        filtered.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      } else if (currentSort === 'date') {
+        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+
+      const tasksList = document.getElementById('tasksList');
+      const emptyState = document.getElementById('emptyState');
+
+      if (filtered.length === 0) {
+        tasksList.innerHTML = '';
+        emptyState.style.display = 'flex';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      tasksList.innerHTML = filtered.map(task => `
+        <div class="task-item fade-in bg-white rounded-lg p-4 border border-gray-200 shadow-sm flex items-start gap-3 transition-all">
+          <input 
+            type="checkbox" 
+            ${task.completed ? 'checked' : ''} 
+            onchange="toggleTask(${task.id})"
+            class="w-5 h-5 mt-1 rounded border-gray-300 text-primary-500 cursor-pointer"
+          >
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="text-sm font-medium ${task.completed ? 'line-through text-gray-400' : 'text-gray-900'}">
+                ${escapeHtml(task.text)}
+              </p>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold text-white" style="background-color: ${CATEGORY_COLORS[task.category].badge}">
+                ${task.category}
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${getPriorityColor(task.priority)}">
+                ${task.priority}
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              ${formatDate(task.createdAt)}
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editTask(${task.id})" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors" title="Edit">
+              <i data-lucide="edit-2" class="w-4 h-4"></i>
+            </button>
+            <div class="relative group">
+              <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors" title="Priority">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </button>
+              <div class="absolute right-0 mt-0 w-32 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                <button onclick="changePriority(${task.id}, 'low')" class="block w-full px-4 py-2 text-sm text-left hover:bg-gray-100 text-gray-700">Low</button>
+                <button onclick="changePriority(${task.id}, 'medium')" class="block w-full px-4 py-2 text-sm text-left hover:bg-gray-100 text-gray-700 border-t">Medium</button>
+                <button onclick="changePriority(${task.id}, 'high')" class="block w-full px-4 py-2 text-sm text-left hover:bg-gray-100 text-gray-700 border-t">High</button>
+              </div>
+            </div>
+            <button onclick="deleteTask(${task.id})" class="p-2 rounded-lg hover:bg-danger-50 text-danger-500 transition-colors" title="Delete">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // Update stats
+    function updateStats() {
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.completed).length;
+      const pending = total - completed;
+      const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+      document.getElementById('taskCount').textContent = total;
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statCompleted').textContent = completed;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statProgress').textContent = progress + '%';
+    }
+
+    // Get priority color
+    function getPriorityColor(priority) {
+      const colors = {
+        high: 'bg-danger-100 text-danger-700',
+        medium: 'bg-yellow-100 text-yellow-700',
+        low: 'bg-success-100 text-success-700'
+      };
+      return colors[priority] || colors.medium;
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (date.toDateString() === today.toDateString()) {
+        return 'Today at ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      } else if (date.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday at ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      } else {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+      }
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Settings Modal
+    function openSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    // Clear all tasks
+    function clearAllTasks() {
+      if (confirm('Are you sure you want to delete ALL tasks? This cannot be undone!')) {
+        tasks = [];
+        saveTasks();
+        updateTasksDisplay();
+        updateStats();
+        closeSettingsModal();
+      }
+    }
+
+    // Export tasks
+    function exportTasks() {
+      const dataStr = JSON.stringify(tasks, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tasks_${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+    }
+
+    // Storage size
+    function updateStorageSize() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const size = stored ? (new TextEncoder().encode(stored).length / 1024).toFixed(2) : '0';
+      document.getElementById('storageSize').textContent = size;
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    function toggleDarkMode() {
+      // Dark mode implementation can be added here
+    }
+
+    // Close modal on background click
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('settingsModal');
+      if (event.target === modal) {
+        closeSettingsModal();
+      }
+    });
+  </script>
+</body>
+</html>
